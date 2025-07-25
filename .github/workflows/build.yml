@@ -4,10 +4,56 @@ on:
   push:
     branches: [ main ]
   pull_request:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+name: Build Buildroot Image
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      simdash_tag:
+        description: 'gt7-simdash tag to use'
+        required: false
+        default: 'main'
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout your repo (external tree)
+        uses: actions/checkout@v4
+        with:
+          path: gt7-br2-external
+
+      - name: Checkout Buildroot (2023.11)
+        uses: actions/checkout@v4
+        with:
+          repository: buildroot/buildroot
+          path: buildroot
+          ref: 2023.11
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential python3 git unzip bc cpio rsync file
+
+      - name: Build image
+        run: |
+          cd buildroot
+          make BR2_EXTERNAL=../gt7-br2-external SIMDASH_TAG="${{ github.event.inputs.simdash_tag }}" raspberrypi4_defconfig
+          make BR2_EXTERNAL=../gt7-br2-external SIMDASH_TAG="${{ github.event.inputs.simdash_tag }}"
+
+      - name: Upload output images
+        uses: actions/upload-artifact@v4
+        with:
+          name: buildroot-images
+          path: buildroot/output/images/
 
     steps:
       - name: Checkout your repo (external tree)
@@ -38,4 +84,22 @@ jobs:
         with:
           name: buildroot-images
           path: buildroot/output/images/
+          
+      - name: Write build badge metadata (date, version)
+        run: |
+          BUILD_DATE="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          VERSION="${{ github.event.inputs.simdash_tag }}"
+          if [ -z "$VERSION" ]; then VERSION="main"; fi
+          echo "{\"date\":\"$BUILD_DATE\", \"version\":\"$VERSION\"}" > .github/latest_build.json
+
+      - name: Push build badge metadata
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin build-badges || true
+          git checkout build-badges || git checkout -b build-badges
+          mv .github/latest_build.json latest_build.json
+          git add latest_build.json
+          git commit -m "Update build metadata [skip ci]" || echo "No changes to commit"
+          git push -u origin build-badges
 
