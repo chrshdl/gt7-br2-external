@@ -1,4 +1,4 @@
-GT7_SIMDASH_VERSION = main  # Or tag/commit
+GT7_SIMDASH_VERSION = $(if $(SIMDASH_TAG),$(SIMDASH_TAG),main)
 GT7_SIMDASH_SITE = https://github.com/chrshdl/gt7-simdash.git
 GT7_SIMDASH_SITE_METHOD = git
 

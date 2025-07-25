@@ -1,14 +1,4 @@
-name: Build Buildroot Image
-
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-  workflow_dispatch:
-jobs:
-  build:
-    runs-on: ubuntu-latest
-name: Build Buildroot Image
+name: Build Buildroot Images (Pi4 & Pi5) and Upload to SimDash Releases
 
 on:
   push:
@@ -24,6 +14,13 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        board:
+          - {name: raspberrypi4, defconfig: raspberrypi4_defconfig}
+          - {name: raspberrypi5, defconfig: raspberrypi5_64_defconfig}
+    env:
+      SIMDASH_TAG: ${{ github.event.inputs.simdash_tag }}
 
     steps:
       - name: Checkout your repo (external tree)
@@ -43,63 +40,31 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential python3 git unzip bc cpio rsync file
 
-      - name: Build image
+      - name: Build image for ${{ matrix.board.name }}
         run: |
           cd buildroot
-          make BR2_EXTERNAL=../gt7-br2-external SIMDASH_TAG="${{ github.event.inputs.simdash_tag }}" raspberrypi4_defconfig
-          make BR2_EXTERNAL=../gt7-br2-external SIMDASH_TAG="${{ github.event.inputs.simdash_tag }}"
+          make BR2_EXTERNAL=../gt7-br2-external SIMDASH_TAG="${SIMDASH_TAG}" ${{ matrix.board.defconfig }}
+          sed -i 's|^# BR2_LINUX_KERNEL_CUSTOM_CONFIG_FRAGMENT is not set|BR2_LINUX_KERNEL_CUSTOM_CONFIG_FRAGMENT="../gt7-br2-external/kernel-dsi.fragment"|' .config
+          make olddefconfig
+          make BR2_EXTERNAL=../gt7-br2-external SIMDASH_TAG="${SIMDASH_TAG}"
 
-      - name: Upload output images
+      - name: Rename image for release
+        run: |
+          mv buildroot/output/images/sdcard.img buildroot/output/images/sdcard-${{ matrix.board.name }}.img
+
+      - name: Upload Pi ${{ matrix.board.name }} image to SimDash repo "latest" release
+        uses: softprops/action-gh-release@v2
+        with:
+          repository: chrshdl/gt7-simdash
+          tag_name: latest
+          name: Latest Build
+          files: buildroot/output/images/sdcard-${{ matrix.board.name }}.img
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.SIMDASH_RELEASE_PAT }}
+
+      - name: Upload output images as artifacts (optional, for Actions browser download)
         uses: actions/upload-artifact@v4
         with:
-          name: buildroot-images
+          name: images-${{ matrix.board.name }}
           path: buildroot/output/images/
-
-    steps:
-      - name: Checkout your repo (external tree)
-        uses: actions/checkout@v4
-        with:
-          path: gt7-br2-external
-
-      - name: Checkout Buildroot (2023.11)
-        uses: actions/checkout@v4
-        with:
-          repository: buildroot/buildroot
-          path: buildroot
-          ref: 2023.11
-
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential python3 git unzip bc cpio rsync file
-
-      - name: Build image
-        run: |
-          cd buildroot
-          make BR2_EXTERNAL=../gt7-br2-external raspberrypi4_defconfig
-          make
-
-      - name: Upload output images
-        uses: actions/upload-artifact@v4
-        with:
-          name: buildroot-images
-          path: buildroot/output/images/
-          
-      - name: Write build badge metadata (date, version)
-        run: |
-          BUILD_DATE="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          VERSION="${{ github.event.inputs.simdash_tag }}"
-          if [ -z "$VERSION" ]; then VERSION="main"; fi
-          echo "{\"date\":\"$BUILD_DATE\", \"version\":\"$VERSION\"}" > .github/latest_build.json
-
-      - name: Push build badge metadata
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git fetch origin build-badges || true
-          git checkout build-badges || git checkout -b build-badges
-          mv .github/latest_build.json latest_build.json
-          git add latest_build.json
-          git commit -m "Update build metadata [skip ci]" || echo "No changes to commit"
-          git push -u origin build-badges
-
