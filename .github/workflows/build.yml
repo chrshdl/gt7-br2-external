@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: Checkout your repo (external tree)
         uses: actions/checkout@v4
+        with:
+          path: gt7-br2-external
 
       - name: Checkout Buildroot (2023.11)
         uses: actions/checkout@v4
