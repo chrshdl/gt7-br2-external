@@ -53,7 +53,7 @@ jobs:
       - name: Upload Pi 4 image to SimDash repo "latest" release
         uses: softprops/action-gh-release@v2
         with:
-          repository: chrshdl/gt7-simdash
+          # repository: chrshdl/gt7-simdash
           tag_name: latest
           name: Latest Build
           files: buildroot/output/images/sdcard-raspberrypi4.img
