@@ -1,0 +1,17 @@
+# Enable Broadcom WiFi firmware for RPi 4
+BR2_PACKAGE_LINUX_FIRMWARE=y
+BR2_PACKAGE_LINUX_FIRMWARE_BRCM_BCM43XXX=y
+
+# Enable wpa_supplicant for WPA/WPA2 WiFi connections
+BR2_PACKAGE_WPA_SUPPLICANT=y
+BR2_PACKAGE_WPA_SUPPLICANT_CLI=y
+# Enable dbus interface
+#BR2_PACKAGE_WPA_SUPPLICANT_DBUS=y
+
+# Enable wireless tools for diagnostics (optional)
+BR2_PACKAGE_WIRELESS_TOOLS=y
+
+# Ensure DHCP client is available
+BR2_PACKAGE_DHCPCD=y
+# or, if using busybox udhcpc
+# BR2_PACKAGE_BUSYBOX=y

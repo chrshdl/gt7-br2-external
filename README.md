@@ -20,17 +20,30 @@ This repository contains the _Buildroot external tree_ for building Raspberry Pi
 - **Supported Hardware**
   - **Boards**
     - Raspberry Pi 4
+    - WiFi
   - **Displays**
     - Official Raspberry Pi DSI Display
     - Waveshare 7" DSI LCD (C), 1024x600
 
 ## Usage
 
+### Download & Flash
 You can always download the latest SD card image for the Raspberry Pi 4 from the badge.
 
 [![Download Pi 4 Image](https://img.shields.io/badge/download-pi4--image-blue?logo=raspberry-pi)](https://github.com/chrshdl/gt7-br2-external/releases/download/latest/sdcard-raspberrypi4.img)
 
 Use [Raspberry Pi Imager](https://www.raspberrypi.com/software/) or [balenaEtcher](https://www.balena.io/etcher/) to flash the image to your SD card.
+
+### WiFi
+After flashing, insert the SD card into your computer. Open the `boot` partition and edit `wpa_supplicant.conf`.
+Replace:
+
+```ini
+ssid="YOUR_WIFI_SSID"
+psk="YOUR_WIFI_PASSWORD"
+```
+
+with your actual WiFi name and password. Save the file, eject the card and insert it in your Pi 4. Now boot your device and it will connect to WiFi automatically on first startup.
 
 ### Kernel and Boot Configuration
 
