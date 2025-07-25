@@ -1,4 +1,24 @@
-# Enable KMS (Kernel Mode Setting) for Pi DSI
+# Recommended for Waveshare 7" DSI (C) and Pi 4
+
+# Hide rainbow splash screen
+disable_splash=1
+
+# Enable hardware features
+dtparam=i2c_arm=on
+dtparam=i2c=on
+dtparam=i2c_vc=on
+
+# GPU memory for video core (128 is enough for KMS + DSI + simple graphics)
+gpu_mem=128
+
+# Enable KMS graphics for modern displays
 dtoverlay=vc4-kms-v3d
-# Enable the Waveshare 7" DSI LCD (C) overlay
+
+# Enable the Waveshare 7" DSI LCD (C) overlay (the key line)
 dtoverlay=vc4-kms-dsi-waveshare-panel,7_0_inchC,i2c1
+
+# Some Waveshare panels work best with 2 framebuffers (helps with tearing)
+max_framebuffers=2
+
+# For some 1024x600 panels you may need:
+# max_framebuffer_height=600

@@ -1,2 +1,5 @@
 # --- DSI Display and WiFi ---
 BR2_LINUX_KERNEL_CONFIG_FRAGMENT_FILES="../gt7-br2-external/kernel-dsi.fragment ../gt7-br2-external/wifi.fragment"
+
+# --- Custom config.txt ---
+BR2_PACKAGE_RPI_FIRMWARE_CONFIG_FILE="../gt7-br2-external/board/raspberrypi4/config.txt"
