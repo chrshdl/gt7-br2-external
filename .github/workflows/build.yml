@@ -1,4 +1,4 @@
-name: Build Buildroot Images (Pi4 & Pi5) and Upload to SimDash Releases
+name: Build Buildroot Image (Pi4) and Upload to SimDash Releases
 
 on:
   push:
@@ -14,11 +14,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        board:
-          - {name: raspberrypi4, defconfig: raspberrypi4_defconfig}
-          - {name: raspberrypi5, defconfig: raspberrypi5_64_defconfig}
     env:
       SIMDASH_TAG: ${{ github.event.inputs.simdash_tag }}
 
@@ -40,31 +35,31 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential python3 git unzip bc cpio rsync file
 
-      - name: Build image for ${{ matrix.board.name }}
+      - name: Build image for Pi 4
         run: |
           cd buildroot
-          make BR2_EXTERNAL=../gt7-br2-external SIMDASH_TAG="${SIMDASH_TAG}" ${{ matrix.board.defconfig }}
+          make BR2_EXTERNAL=../gt7-br2-external SIMDASH_TAG="${SIMDASH_TAG}" raspberrypi4_defconfig
           sed -i 's|^# BR2_LINUX_KERNEL_CUSTOM_CONFIG_FRAGMENT is not set|BR2_LINUX_KERNEL_CUSTOM_CONFIG_FRAGMENT="../gt7-br2-external/kernel-dsi.fragment"|' .config
           make olddefconfig
           make BR2_EXTERNAL=../gt7-br2-external SIMDASH_TAG="${SIMDASH_TAG}"
 
       - name: Rename image for release
         run: |
-          mv buildroot/output/images/sdcard.img buildroot/output/images/sdcard-${{ matrix.board.name }}.img
+          mv buildroot/output/images/sdcard.img buildroot/output/images/sdcard-raspberrypi4.img
 
-      - name: Upload Pi ${{ matrix.board.name }} image to SimDash repo "latest" release
+      - name: Upload Pi 4 image to SimDash repo "latest" release
         uses: softprops/action-gh-release@v2
         with:
           repository: chrshdl/gt7-simdash
           tag_name: latest
           name: Latest Build
-          files: buildroot/output/images/sdcard-${{ matrix.board.name }}.img
+          files: buildroot/output/images/sdcard-raspberrypi4.img
           prerelease: true
         env:
           GITHUB_TOKEN: ${{ secrets.SIMDASH_RELEASE_PAT }}
 
-      - name: Upload output images as artifacts (optional, for Actions browser download)
+      - name: Upload output images as artifacts (optional)
         uses: actions/upload-artifact@v4
         with:
-          name: images-${{ matrix.board.name }}
+          name: images-raspberrypi4
           path: buildroot/output/images/
