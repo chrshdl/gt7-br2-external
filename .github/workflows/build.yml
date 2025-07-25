@@ -38,10 +38,13 @@ jobs:
       - name: Build image for Pi 4
         run: |
           cd buildroot
-          make BR2_EXTERNAL=../gt7-br2-external SIMDASH_TAG="${SIMDASH_TAG}" raspberrypi4_defconfig
+          # Configure for Pi 4, set overlay for custom config.txt
+          make BR2_EXTERNAL=../gt7-br2-external BR2_ROOTFS_OVERLAY="../gt7-br2-external/board/raspberrypi4/overlay" SIMDASH_TAG="${SIMDASH_TAG}" raspberrypi4_defconfig
+          # Set kernel config fragment for DSI support
           sed -i 's|^# BR2_LINUX_KERNEL_CUSTOM_CONFIG_FRAGMENT is not set|BR2_LINUX_KERNEL_CUSTOM_CONFIG_FRAGMENT="../gt7-br2-external/kernel-dsi.fragment"|' .config
           make olddefconfig
-          make BR2_EXTERNAL=../gt7-br2-external SIMDASH_TAG="${SIMDASH_TAG}"
+          # Build image
+          make BR2_EXTERNAL=../gt7-br2-external BR2_ROOTFS_OVERLAY="../gt7-br2-external/board/raspberrypi4/overlay" SIMDASH_TAG="${SIMDASH_TAG}"
 
       - name: Rename image for release
         run: |

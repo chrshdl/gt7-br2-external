@@ -1,0 +1,4 @@
+# Enable KMS (Kernel Mode Setting) for Pi DSI
+dtoverlay=vc4-kms-v3d
+# Enable the Waveshare 7" DSI LCD (C) overlay
+dtoverlay=vc4-kms-dsi-waveshare-panel,7_0_inchC,i2c1
