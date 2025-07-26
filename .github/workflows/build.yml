@@ -48,6 +48,7 @@ jobs:
       - name: Build image for Pi 4
         run: |
           cd buildroot
+          make clean
           make BR2_EXTERNAL=../gt7-br2-external \
                BR2_ROOTFS_OVERLAY="../gt7-br2-external/board/raspberrypi4/overlay" \
                BR2_CONFIG_FRAGMENT_FILES="../gt7-br2-external/kernel-dsi.fragment ../gt7-br2-external/wifi.fragment" \
@@ -55,7 +56,7 @@ jobs:
                raspberrypi4_defconfig
           ./utils/config --set-str BR2_PACKAGE_RPI_FIRMWARE_CONFIG_FILE ../gt7-br2-external/board/raspberrypi4/config.txt
           ./utils/config --set-str BR2_TARGET_RPI_BOOT_PARTITION_SIZE 256
-          make
+          grep BOOT_PARTITION_SIZE .config || echo "BOOT_PARTITION_SIZE not set!"
 
 
       - name: Rename image for release
