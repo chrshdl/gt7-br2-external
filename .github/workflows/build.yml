@@ -52,10 +52,9 @@ jobs:
                BR2_CONFIG_FRAGMENT_FILES="../gt7-br2-external/buildroot.fragment" \
                SIMDASH_TAG="${SIMDASH_TAG}" \
                raspberrypi4_defconfig
-          make BR2_EXTERNAL=../gt7-br2-external \
-               BR2_ROOTFS_OVERLAY="../gt7-br2-external/board/raspberrypi4/overlay" \
-               BR2_CONFIG_FRAGMENT_FILES="../gt7-br2-external/buildroot.fragment" \
-               SIMDASH_TAG="${SIMDASH_TAG}"
+          # override the config.txt path
+          ./utils/config --set-str BR2_PACKAGE_RPI_FIRMWARE_CONFIG_FILE ../gt7-br2-external/board/raspberrypi4/config.txt
+          make
 
       - name: Rename image for release
         run: |
