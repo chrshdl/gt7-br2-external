@@ -1,4 +1,4 @@
-name: Build Buildroot Image (Pi4) and Upload to SimDash Releases
+name: Build image (Pi4) and upload to releases
 
 on:
   push:
@@ -9,6 +9,7 @@ on:
       - 'configs/**'
       - '.github/workflows/build.yml'
       - 'kernel-dsi.fragment'
+      - 'buildroot.fragment'
       - 'external.mk'
       - 'external.desc'
 
